@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <Product Id="*"
+           Name="$(var.ProductName) $(var.Major).$(var.Minor).$(var.Rev)"
+           Language="1033"
+           Version="$(var.Major).$(var.Minor).$(var.Rev)"
+           Manufacturer="Dynamo"
+           UpgradeCode="{584B3E06-FE7A-4341-8C22-339B00ABD58A}">
+
+    <Package Comments="$(var.ProductName) $(var.FullVersion)"
+                 Description="Install package for $(var.ProductName)"
+                 InstallerVersion="200"
+                 Compressed="yes"
+                 Languages="1033"
+                 Manufacturer="Dynamo"
+                 Platform="x64"/>
+
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                      Schedule="afterInstallValidate"
+                      DowngradeErrorMessage="A newer version of $(var.ProductName) is already installed." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <Property Id="INSTALLDIR"/>
+    <CustomAction Id="DIRCA_DEFAULT_INSTALLDIR" Property="DYNAMO_INSTALLDIR" Value="[ProgramFiles64Folder][Manufacturer]\$(var.ProductName)\$(var.Major).$(var.Minor)" Execute="immediate" />
+    <CustomAction Id="DIRCA_SET_INSTALLDIR" Property="DYNAMO_INSTALLDIR" Value="[INSTALLDIR]\$(var.ProductName)\$(var.Major).$(var.Minor)" Execute="immediate" />
+
+    <InstallExecuteSequence>
+      <Custom Action="DIRCA_DEFAULT_INSTALLDIR" Before="CostInitialize">INSTALLDIR=""</Custom>
+      <Custom Action="DIRCA_SET_INSTALLDIR" Before="CostInitialize"><![CDATA[INSTALLDIR<>""]]></Custom>
+    </InstallExecuteSequence>
+
+    <Feature Id="DYNAMO_CORE_FEATURE"
+             Title="Dynamo Core"
+             Level="1">
+      <ComponentGroupRef Id="RELEASE"/>
+      <ComponentRef Id="ProductRegistry" />
+    </Feature>
+
+    <Icon Id="DynamoInstaller.ico" SourceFile="$(var.base)\tools\install\Extra\DynamoInstaller.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="DynamoInstaller.ico" />
+    
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="DYNAMO_INSTALLDIR"/>
+      <Directory Id="CommonAppDataFolder">
+        <Directory Id="DYNAMO_PROGDATA" Name="Dynamo">
+          <Directory Id="PROGDATA" Name="$(var.Major).$(var.Minor)"/>
+        </Directory>
+      </Directory>
+      <Directory Id="AppDataFolder">
+        <Directory Id="DYNAMO_APPDATA" Name="Dynamo">
+          <Directory Id="APPDATA" Name="$(var.Major).$(var.Minor)">
+            <Directory Id="definitions" Name="definitions" />
+            <Directory Id="logs" Name="Logs" />
+            <Directory Id="packages" Name="packages" />
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <DirectoryRef Id="TARGETDIR">
+      <Component Id="ProductRegistry" Win64="yes">
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(var.ProductName) $(var.Major).$(var.Minor)"
+                     ForceDeleteOnUninstall="yes">
+          <RegistryValue Name="InstallLocation" Value="[DYNAMO_INSTALLDIR]" Type="string" />
+          <RegistryValue Name="UninstallString" Value="MsiExec.exe" Type="string" />
+          <RegistryValue Name="UninstallParam" Value="/X[ProductCode] /quiet" Type="string" />
+          <RegistryValue Name="Version" Value="$(var.FullVersion)" Type="string" />
+          <RegistryValue Name="RevVersion" Value="$(var.Rev)" Type="integer" />
+        </RegistryKey>
+
+        <CreateFolder Directory="definitions" />
+        <CreateFolder Directory="logs" />
+        <CreateFolder Directory="packages" />
+
+        <RemoveFolder Id="RemoveDefinitionsDir" Directory="definitions" On="uninstall" />
+        <RemoveFolder Id="RemoveLogsDir" Directory="logs" On="uninstall" />
+        <RemoveFolder Id="RemovePackagesDir" Directory="packages" On="uninstall" />
+        <RemoveFolder Id="RemoveAppDataDir" Directory="APPDATA" On="uninstall" />
+        <RemoveFolder Id="RemoveDynamoAppDataDir" Directory="DYNAMO_APPDATA" On="uninstall" />
+      </Component>
+    </DirectoryRef>
+
+  </Fragment>
+
+</Wix>

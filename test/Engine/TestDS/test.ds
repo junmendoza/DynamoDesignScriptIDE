@@ -1,0 +1,57 @@
+
+/*
+__IN_clock = 1;
+__IN_reset = 0;
+__IN_Instr = 11111;
+__OUT_Instr : OUT = -1;
+
+// Locals
+propagatePipelineRegisters = 0;
+
+// Preg vars
+preg_Instr : OUT = -1;
+
+__PROCESS_PipelineRegister_Dispatch =
+[Imperative] (__IN_clock, __IN_reset)
+{
+	if (__IN_reset == 1)
+	{
+	}
+	elseif(__IN_reset == 0)
+	{
+		// Rising Edge
+		if (__IN_clock == 1)
+		{
+			if (propagatePipelineRegisters == 1)
+			{
+				propagatePipelineRegisters = 0;
+
+				// Send the current state to the output signals
+				__OUT_Instr = preg_Instr;
+			}
+		}
+	}
+};
+
+__PROCESS_PipelineRegister_Latch =
+[Imperative] (__IN_reset, __IN_Instr)
+{
+	if (__IN_reset == 1)
+	{
+		propagatePipelineRegisters = 0;
+	}
+	elseif(__IN_reset == 0)
+	{
+        propagatePipelineRegisters = 1;
+
+        // Save the current state
+        preg_Instr = __IN_Instr;
+	}
+};
+
+__IN_clock = 0;
+__IN_clock = 1;
+*/
+
+a = 1;
+b = a << 10;
